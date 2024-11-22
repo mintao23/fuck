@@ -27,20 +27,20 @@
     // 로그 출력
     System.out.println("수정 결과: " + result);
 
-    if (result > 0) {
-%>
+%>if (result > 0) {
+
 <script>
     alert("글이 성공적으로 수정되었습니다!");
     location.href = "list.jsp";
 </script>
-<%
+
 } else {
-%>
+
 <script>
     alert("글 수정에 실패했습니다.");
     history.back();
 </script>
-<%
-    }
+
+}<%
 %>
 

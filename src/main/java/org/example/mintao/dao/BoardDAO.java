@@ -45,19 +45,20 @@ public class BoardDAO {
         try {
             conn = JDBCUtil.getConnection();
 
-            // 기존 파일명이 유지되는지 확인
-            String currentPhoto = getCurrentPhoto(vo.getSeq());
-            System.out.println("현재 파일명: " + currentPhoto);  // 로그 추가
+            // 기존 파일명을 유지하는 로직
+            String currentPhoto = getCurrentPhoto(vo.getSeq(), conn);
+            System.out.println("현재 파일명: " + currentPhoto); // 로그 추가
 
             pst = conn.prepareStatement(BOARD_UPDATE);
             pst.setString(1, vo.getTitle());
             pst.setString(2, vo.getWriter());
             pst.setString(3, vo.getContent());
-            pst.setString(4, (vo.getPhoto() == null || vo.getPhoto().isEmpty()) ? currentPhoto : vo.getPhoto());  // 사진 정보 처리
+            pst.setString(4, (vo.getPhoto() == null || vo.getPhoto().isEmpty()) ? currentPhoto : vo.getPhoto()); // 사진 정보 처리
             pst.setInt(5, vo.getSeq());
-            System.out.println("Fuck");
+            System.out.println("쿼리: " + pst.toString());
+
             int result = pst.executeUpdate();
-            System.out.println("업데이트 결과: " + result);  // 로그 추가
+            System.out.println("업데이트 결과: " + result); // 로그 추가
             return result;
         } catch (Exception e) {
             e.printStackTrace();
@@ -67,24 +68,25 @@ public class BoardDAO {
         }
     }
 
-    // 현재 게시글의 파일 정보를 가져오는 메소드
-    private String getCurrentPhoto(int seq) {
+    private String getCurrentPhoto(int seq, Connection conn) {
         String photo = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
         try {
-            conn = JDBCUtil.getConnection();
-            pst = conn.prepareStatement("SELECT photo FROM BOARDP WHERE seq = ?");
-            pst.setInt(1, seq);
-            rs = pst.executeQuery();
+            pstmt = conn.prepareStatement("SELECT photo FROM BOARDP WHERE seq = ?");
+            pstmt.setInt(1, seq);
+            rs = pstmt.executeQuery();
             if (rs.next()) {
                 photo = rs.getString("photo");
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            JDBCUtil.close(rs, pst, conn);
+            JDBCUtil.close(rs, pstmt, null); // Connection은 닫지 않음
         }
         return photo;
     }
+
 
 
     // 추가: 게시글 상세 보기
@@ -140,7 +142,7 @@ public class BoardDAO {
         }
         return boardList;
     }
-    public List<BoardVO> getBoardList(String searchKeyword) {
+    public List<BoardVO> getBoardList(String searchKeyword, String sortOption) {
         System.out.println("===> JDBC로 getBoardList() 기능 처리");
         List<BoardVO> boardList = new ArrayList<>();
         try {
@@ -148,12 +150,19 @@ public class BoardDAO {
 
             String sql = "select * from BOARDP ";
 
-            // 검색어가 있을 경우, SQL 쿼리 수정
+            // 검색어가 있을 경우, SQL 조건 추가
             if (searchKeyword != null && !searchKeyword.isEmpty()) {
                 sql += "where title like ? or content like ? ";
             }
 
-            sql += "order by seq desc"; // 기본적으로 시퀀스 순으로 정렬
+            // 정렬 옵션에 따라 정렬 기준 설정
+            if ("title".equals(sortOption)) {
+                sql += "order by title asc"; // 제목순 정렬
+            } else if ("regDate".equals(sortOption)) {
+                sql += "order by regDate desc"; // 날짜순 정렬
+            } else {
+                sql += "order by seq desc"; // 기본 정렬 (seq 역순)
+            }
 
             pst = conn.prepareStatement(sql);
 

@@ -4,10 +4,11 @@
 <%@ page import="java.util.List" %>
 <%
     String searchKeyword = request.getParameter("searchKeyword"); // 검색어를 받기 위한 변수
+    String sortOption = request.getParameter("sortOption"); // 정렬 옵션을 받기 위한 변수
     BoardDAO dao = new BoardDAO();
 
-    // 게시글 목록을 가져오는 부분에서 검색어가 있을 경우 필터링
-    List<BoardVO> boardList = dao.getBoardList(searchKeyword); // 수정된 DAO 메소드 사용
+    // 게시글 목록을 가져오는 부분에서 검색어와 정렬 옵션 적용
+    List<BoardVO> boardList = dao.getBoardList(searchKeyword, sortOption);
 %>
 
 <!DOCTYPE html>
@@ -34,9 +35,14 @@
 <body>
 <h2>게시판 목록</h2>
 
-<!-- 검색 폼 -->
+<!-- 검색 및 정렬 폼 -->
 <form action="list.jsp" method="get">
     <input type="text" name="searchKeyword" value="<%= searchKeyword != null ? searchKeyword : "" %>" placeholder="제목 또는 내용 검색">
+    <select name="sortOption">
+        <option value="" <%= (sortOption == null || sortOption.isEmpty()) ? "selected" : "" %>>정렬 기준</option>
+        <option value="title" <%= "title".equals(sortOption) ? "selected" : "" %>>제목순</option>
+        <option value="regDate" <%= "regDate".equals(sortOption) ? "selected" : "" %>>날짜순</option>
+    </select>
     <button type="submit">검색</button>
 </form>
 
