@@ -1,5 +1,7 @@
 package org.example.mintao.bean;
+
 import java.util.Date;
+
 public class BoardVO {
     private int seq;
     private String title;
@@ -7,6 +9,7 @@ public class BoardVO {
     private String content;
     private Date regdate;
     private int cnt;
+    private String photo; // 파일 이름 저장
 
     public int getSeq() {
         return seq;
@@ -54,5 +57,13 @@ public class BoardVO {
 
     public void setCnt(int cnt) {
         this.cnt = cnt;
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 }

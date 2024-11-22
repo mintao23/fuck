@@ -1,30 +1,34 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="org.example.mintao.bean.BoardVO" %>
 <%@ page import="org.example.mintao.dao.BoardDAO" %>
-
 <%
     int seq = Integer.parseInt(request.getParameter("seq"));
-
     BoardDAO dao = new BoardDAO();
-    BoardVO board = dao.getBoard(seq);
+    BoardVO vo = dao.getBoard(seq);
 %>
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Edit Post</title>
+    <title>글 수정</title>
 </head>
 <body>
-<h1>Edit Post</h1>
-<form action="edit_ok.jsp" method="post">
-    <input type="hidden" name="seq" value="<%= board.getSeq() %>">
-    <label>Title:</label>
-    <input type="text" name="title" value="<%= board.getTitle() %>"><br>
-    <label>Writer:</label>
-    <input type="text" name="writer" value="<%= board.getWriter() %>"><br>
-    <label>Content:</label>
-    <textarea name="content"><%= board.getContent() %></textarea><br>
-    <button type="submit">Update</button>
+<h2>글 수정</h2>
+<form action="edit_ok.jsp" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="seq" value="<%= vo.getSeq() %>">
+
+    <label for="title">제목:</label>
+    <input type="text" name="title" id="title" value="<%= vo.getTitle() %>" required><br>
+
+    <label for="writer">작성자:</label>
+    <input type="text" name="writer" id="writer" value="<%= vo.getWriter() %>" required><br>
+
+    <label for="content">내용:</label>
+    <textarea name="content" id="content" rows="5" required><%= vo.getContent() %></textarea><br>
+
+    <label for="photo">첨부 파일 (기존: <%= vo.getPhoto() %>):</label>
+    <input type="file" name="photo" id="photo"><br><br>
+
+    <button type="submit">수정하기</button>
 </form>
 </body>
 </html>
