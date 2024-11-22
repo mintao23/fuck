@@ -24,6 +24,9 @@
     BoardDAO dao = new BoardDAO();
     int result = dao.updateBoard(vo);
 
+    // 로그 출력
+    System.out.println("수정 결과: " + result);
+
     if (result > 0) {
 %>
 <script>
@@ -40,3 +43,4 @@
 <%
     }
 %>
+

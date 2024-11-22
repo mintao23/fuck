@@ -40,18 +40,25 @@ public class BoardDAO {
         }
     }
 
-    // 추가: 게시글 수정
     public int updateBoard(BoardVO vo) {
         System.out.println("===> JDBC로 updateBoard() 기능 처리");
         try {
             conn = JDBCUtil.getConnection();
+
+            // 기존 파일명이 유지되는지 확인
+            String currentPhoto = getCurrentPhoto(vo.getSeq());
+            System.out.println("현재 파일명: " + currentPhoto);  // 로그 추가
+
             pst = conn.prepareStatement(BOARD_UPDATE);
             pst.setString(1, vo.getTitle());
             pst.setString(2, vo.getWriter());
             pst.setString(3, vo.getContent());
-            pst.setString(4, vo.getPhoto()); // photo 컬럼 처리
+            pst.setString(4, (vo.getPhoto() == null || vo.getPhoto().isEmpty()) ? currentPhoto : vo.getPhoto());  // 사진 정보 처리
             pst.setInt(5, vo.getSeq());
-            return pst.executeUpdate();
+            System.out.println("Fuck");
+            int result = pst.executeUpdate();
+            System.out.println("업데이트 결과: " + result);  // 로그 추가
+            return result;
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
@@ -59,6 +66,26 @@ public class BoardDAO {
             JDBCUtil.close(pst, conn);
         }
     }
+
+    // 현재 게시글의 파일 정보를 가져오는 메소드
+    private String getCurrentPhoto(int seq) {
+        String photo = null;
+        try {
+            conn = JDBCUtil.getConnection();
+            pst = conn.prepareStatement("SELECT photo FROM BOARDP WHERE seq = ?");
+            pst.setInt(1, seq);
+            rs = pst.executeQuery();
+            if (rs.next()) {
+                photo = rs.getString("photo");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtil.close(rs, pst, conn);
+        }
+        return photo;
+    }
+
 
     // 추가: 게시글 상세 보기
     public BoardVO getBoard(int seq) {
@@ -75,9 +102,9 @@ public class BoardDAO {
                 board.setTitle(rs.getString("title"));
                 board.setWriter(rs.getString("writer"));
                 board.setContent(rs.getString("content"));
-                board.setRegDate(rs.getDate("regdate"));
+                board.setRegDate(rs.getDate("regDate"));
                 board.setCnt(rs.getInt("cnt"));
-                board.setPhoto(rs.getString("photo")); // photo 데이터 설정
+                board.setPhoto(rs.getString("photo"));  // 파일 정보 추가
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -113,24 +140,29 @@ public class BoardDAO {
         }
         return boardList;
     }
-    public List<BoardVO> getBoardList(String searchType, String keyword, String sort) {
-        System.out.println("===> JDBC로 getBoardList() 기능 처리 (검색/정렬 포함)");
+    public List<BoardVO> getBoardList(String searchKeyword) {
+        System.out.println("===> JDBC로 getBoardList() 기능 처리");
         List<BoardVO> boardList = new ArrayList<>();
-        String query = "SELECT * FROM BOARDP";
-        boolean hasCondition = false;
-
-        if (keyword != null && !keyword.isEmpty()) {
-            query += " WHERE " + searchType + " LIKE ?";
-            hasCondition = true;
-        }
-        query += " ORDER BY " + (sort != null ? sort : "seq") + " DESC";
-
         try {
             conn = JDBCUtil.getConnection();
-            pst = conn.prepareStatement(query);
-            if (hasCondition) {
-                pst.setString(1, "%" + keyword + "%");
+
+            String sql = "select * from BOARDP ";
+
+            // 검색어가 있을 경우, SQL 쿼리 수정
+            if (searchKeyword != null && !searchKeyword.isEmpty()) {
+                sql += "where title like ? or content like ? ";
             }
+
+            sql += "order by seq desc"; // 기본적으로 시퀀스 순으로 정렬
+
+            pst = conn.prepareStatement(sql);
+
+            // 검색어가 있을 경우, ? 값 설정
+            if (searchKeyword != null && !searchKeyword.isEmpty()) {
+                pst.setString(1, "%" + searchKeyword + "%");
+                pst.setString(2, "%" + searchKeyword + "%");
+            }
+
             rs = pst.executeQuery();
             while (rs.next()) {
                 BoardVO board = new BoardVO();
@@ -140,6 +172,7 @@ public class BoardDAO {
                 board.setContent(rs.getString("content"));
                 board.setRegDate(rs.getDate("regDate"));
                 board.setCnt(rs.getInt("cnt"));
+                board.setPhoto(rs.getString("photo")); // photo 데이터 설정
                 boardList.add(board);
             }
         } catch (Exception e) {
@@ -164,5 +197,21 @@ public class BoardDAO {
             JDBCUtil.close(pst, conn);
         }
     }
+
+    // 추가: 게시글 삭제
+    public void deleteBoard(int seq) {
+        System.out.println("===> JDBC로 deleteBoard() 기능 처리");
+        try {
+            conn = JDBCUtil.getConnection();
+            pst = conn.prepareStatement(BOARD_DELETE);
+            pst.setInt(1, seq); // 삭제할 게시글의 seq 설정
+            pst.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtil.close(pst, conn);
+        }
+    }
+
 
 }

@@ -29,12 +29,18 @@ public class FileUpload {
 
                 // 파일이 비어있지 않은 경우 저장
                 if (fileName != null && !fileName.isEmpty()) {
-                    part.write(uploadPath + File.separator + fileName); // 파일 저장
+                    File uploadedFile = new File(uploadPath + File.separator + fileName);
+
+                    // 파일 저장
+                    part.write(uploadedFile.getAbsolutePath());
+                    System.out.println("File uploaded to: " + uploadedFile.getAbsolutePath());
+                } else {
+                    fileName = null; // 파일 이름이 없는 경우 null로 처리
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return fileName; // 업로드된 파일 이름 반환
+        return fileName; // 업로드된 파일 이름 반환, 없으면 null 반환
     }
 }

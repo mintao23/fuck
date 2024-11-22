@@ -17,13 +17,13 @@
     <input type="hidden" name="seq" value="<%= vo.getSeq() %>">
 
     <label for="title">제목:</label>
-    <input type="text" name="title" id="title" value="<%= vo.getTitle() %>" required><br>
+    <input type="text" name="title" id="title" value="<%= vo.getTitle() %>"><br>
 
     <label for="writer">작성자:</label>
-    <input type="text" name="writer" id="writer" value="<%= vo.getWriter() %>" required><br>
+    <input type="text" name="writer" id="writer" value="<%= vo.getWriter() %>"><br>
 
     <label for="content">내용:</label>
-    <textarea name="content" id="content" rows="5" required><%= vo.getContent() %></textarea><br>
+    <textarea name="content" id="content" rows="5"><%= vo.getContent() %></textarea><br>
 
     <label for="photo">첨부 파일 (기존: <%= vo.getPhoto() %>):</label>
     <input type="file" name="photo" id="photo"><br><br>
